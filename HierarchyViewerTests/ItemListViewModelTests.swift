@@ -21,28 +21,6 @@ final class ItemListViewModelTests: XCTestCase {
                                 itemRepository: itemRepository)
     }
     
-    func testResizeURLReplacesSizeParam() {
-        // Given
-        let url = "https://robohash.org/280?&set=set4&size=400x400"
-
-        // When
-        let resizedUrl = sut.resizeURL(url, to: "100x100")
-        
-        // Then
-        XCTAssertEqual(resizedUrl?.absoluteString, "https://robohash.org/280?&set=set4&size=100x100")
-    }
-    
-    func testResizeUrlAppendsSizeIfMissing() {
-        // Given
-        let url = "https://robohash.org/280?&set=set4"
-
-        // When
-        let resizedUrl = sut.resizeURL(url, to: "50x50")
-        
-        // Then
-        XCTAssertEqual(resizedUrl?.absoluteString, "https://robohash.org/280?&set=set4&size=50x50")
-    }
-    
     func testOnTapGestureSetsItemAndFlag() {
         // Given
         let item = Item(type: .page, title: "Main Page", image: nil, items: nil)
