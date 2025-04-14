@@ -44,6 +44,11 @@ struct ItemListView: View {
             .refreshable {
                 await viewModel.onRefresh()
             }
+            .sheet(isPresented: $viewModel.shouldDisplayImageDetails, onDismiss: viewModel.onDismissItemDetails) {
+                if let item = viewModel.itemToDisplay {
+                    ItemDetailView(item: item)
+                }
+            }
         }
     }
 }
