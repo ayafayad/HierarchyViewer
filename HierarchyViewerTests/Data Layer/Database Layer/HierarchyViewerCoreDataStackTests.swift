@@ -55,15 +55,15 @@ final class HierarchyViewerCoreDataStackTests: XCTestCase {
         let fetchRequest = NSFetchRequest<CDItem>(entityName: CDItem.entityName)
         fetchRequest.predicate = NSPredicate(format: "itemType == %@", "page")
         let context = sut.context
-        guard let entityDescription = NSEntityDescription.entity(forEntityName: CDItem.entityName,
-                                                                 in: context) else {
-            fatalError("Unable to find entity description for CDItem")
-        }
-        let pageItem = CDItem(entity: entityDescription, insertInto: context)
+        let pageEntity = NSEntityDescription.insertNewObject(forEntityName: CDItem.entityName,
+                                                             into: context) as? CDItem
+        let pageItem = try XCTUnwrap(pageEntity)
         pageItem.id = UUID()
         pageItem.itemType = "page"
         pageItem.title = "Main Page"
-        let textItem = CDItem(entity: entityDescription, insertInto: context)
+        let textEntity = NSEntityDescription.insertNewObject(forEntityName: CDItem.entityName,
+                                                             into: context) as? CDItem
+        let textItem = try XCTUnwrap(textEntity)
         textItem.id = UUID()
         textItem.itemType = "text"
         textItem.title = "Welcome to the main page!"
