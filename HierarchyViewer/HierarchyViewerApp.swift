@@ -12,7 +12,7 @@ struct HierarchyViewerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ItemListView(viewModel: ItemListViewModel(itemRepository: ItemRepository()))
         }
     }
 }

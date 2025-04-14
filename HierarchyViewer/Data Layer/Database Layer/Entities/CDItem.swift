@@ -21,6 +21,7 @@ public class CDItem: NSManagedObject, Managed {
     @NSManaged public var image: String?
     @NSManaged public var items: NSOrderedSet?
     @NSManaged public var parent: CDItem?
+    @NSManaged public var depth: Int
     
     public static var itemsWithNoParentsFetchRequest: NSFetchRequest<CDItem> {
         let request: NSFetchRequest<CDItem> = CDItem.fetchRequest
@@ -51,6 +52,7 @@ extension CDItem {
         } else {
             self.items = []
         }
+        self.depth = item.depth
     }
 }
 
@@ -64,5 +66,9 @@ extension Item: Mappable {
         self.title = cdItem.title
         self.image = cdItem.image
         self.items = (cdItem.items?.array as? [CDItem])?.compactMap({ Item($0) })
+        if self.items?.isEmpty == true {
+            self.items = nil
+        }
+        self.depth = cdItem.depth
     }
 }

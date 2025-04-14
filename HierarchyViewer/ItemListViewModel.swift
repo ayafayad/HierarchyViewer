@@ -18,6 +18,7 @@ class ItemListViewModel: NSObject, ObservableObject {
     // MARK: - Published Variables
     @Published var items: [Item] = []
     @Published var shouldDisplayImageDetails: Bool = false
+    @Published var shouldShowEmptyView: Bool = false
     
     // MARK: - Private Variables
     private let itemController: NSFetchedResultsController<CDItem>
@@ -43,19 +44,7 @@ class ItemListViewModel: NSObject, ObservableObject {
     func onAppear() async {
         retrieveLocalData()
         await refreshDataFromServer()
-    }
-    
-    func resizeURL(_ urlString: String?, to size: String) -> URL? {
-        guard let urlString, let url = URL(string: urlString) else { return nil }
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        var queryItems = components?.queryItems ?? []
-        if let index = queryItems.firstIndex(where: { $0.name == "size" }) {
-            queryItems[index].value = size
-        } else {
-            queryItems.append(URLQueryItem(name: "size", value: size))
-        }
-        components?.queryItems = queryItems
-        return components?.url ?? url
+        await refreshEmptyView()
     }
     
     func onTapGesture(on item: Item) {
@@ -67,12 +56,16 @@ class ItemListViewModel: NSObject, ObservableObject {
         itemToDisplay = nil
     }
     
+    func onRefresh() async {
+        await refreshDataFromServer()
+    }
+
     // MARK: - Private Helper Functions
     private func retrieveLocalData() {
         do {
             try itemController.performFetch()
             let fetchedItems = itemController.fetchedObjects?.compactMap({ Item($0) }) ?? []
-                    
+
             // Update UI state on the main actor.
             Task { @MainActor in
                 self.items = fetchedItems
@@ -86,11 +79,20 @@ class ItemListViewModel: NSObject, ObservableObject {
         let returnedModel = await networkManager.request(Constants.Network.itemsUrl, type: Item.self)
         switch returnedModel {
         case .success(let item):
+            let itemsWithDepth = item.updateDepth()
             await itemRepository.deleteAllSavedItems()
-            await itemRepository.insertItem(item)
+            await itemRepository.insertItem(itemsWithDepth)
+            await refreshEmptyView()
         case .failure(let error):
             print(error)
         }
+    }
+    
+    @MainActor
+    private func refreshEmptyView() {
+        let isItemsEmpty = items.isEmpty
+        guard isItemsEmpty != shouldShowEmptyView else { return }
+        shouldShowEmptyView = isItemsEmpty
     }
 }
 
