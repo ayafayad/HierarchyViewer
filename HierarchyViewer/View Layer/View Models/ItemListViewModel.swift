@@ -14,11 +14,13 @@ class ItemListViewModel: NSObject, ObservableObject {
     var networkManager: APIManagerProtocol
     let itemRepository: ItemRepositoryProtocol
     var itemToDisplay: Item?
+    var errorMessage: String?
     
     // MARK: - Published Variables
     @Published var items: [Item] = []
     @Published var shouldDisplayImageDetails: Bool = false
     @Published var shouldShowEmptyView: Bool = false
+    @Published var shouldShowErrorAlert: Bool = false
     
     // MARK: - Private Variables
     private let itemController: NSFetchedResultsController<CDItem>
@@ -84,8 +86,16 @@ class ItemListViewModel: NSObject, ObservableObject {
             await itemRepository.insertItem(itemsWithDepth)
             await refreshEmptyView()
         case .failure(let error):
-            print(error)
+            if let message = error.errorDescription {
+                await displayError(with: "\(message) Any displayed data might be outdated.")
+            }
         }
+    }
+    
+    @MainActor
+    private func displayError(with message: String) {
+        errorMessage = message
+        shouldShowErrorAlert = true
     }
     
     @MainActor

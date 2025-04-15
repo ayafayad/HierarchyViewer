@@ -50,6 +50,17 @@ struct ItemListView: View {
                 }
             }
         }
+        .alert("An Error Occurred",
+               isPresented: $viewModel.shouldShowErrorAlert, actions: {
+            Button("Ok", role: .cancel) {}
+            Button("Refresh", systemImage: "arrow.clockwise", action: {
+                Task { await viewModel.onRefresh() }
+            })
+        }, message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+            }
+        })
     }
 }
 
