@@ -14,14 +14,21 @@ protocol APIManagerProtocol {
 class APIManager: APIManagerProtocol {
     
     private let urlSession: URLSession
+    private let networkMonitor: NetworkMonitor
     private let decoder = JSONDecoderService()
     
     init(urlSession: URLSession = .shared,
+         networkMonitor: NetworkMonitor = PathNetworkMonitor(),
          decoder: JSONDecoderService = .init()) {
         self.urlSession = urlSession
+        self.networkMonitor = networkMonitor
     }
     
     func request<T: Decodable>(_ urlString: String, type: T.Type) async -> Result<T, NetworkError> {
+        
+        guard networkMonitor.isReachable() else {
+            return .failure(.noInternetConnection)
+        }
         
         guard let url = URL(string: urlString) else {
             return .failure(.invalidUrl(urlString))
