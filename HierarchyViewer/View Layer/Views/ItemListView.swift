@@ -61,10 +61,6 @@ struct ItemListView: View {
                 Text(errorMessage)
             }
         })
+        .navigationViewStyle(.stack)
     }
-}
-
-#Preview {
-    ItemListView(viewModel: ItemListViewModel(
-        itemRepository: ItemRepository(coreDataStack: .init(storageType: .inMemory))))
 }

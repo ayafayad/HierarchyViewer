@@ -98,25 +98,31 @@ private struct ImageView: View {
                 Spacer()
             }
             
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 if let imageURL = item.smallImgURL {
                     if let title = item.title {
                         Text(title)
                             .font(.system(size: fontSize))
                             .foregroundColor(.black)
                     }
-                    AsyncImage(url: imageURL) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100)
-                            .cornerRadius(8)
-                            .onTapGesture {
-                                onTapGesture(item)
-                            }
-                    } placeholder: {
-                        ProgressView()
-                            .frame(width: 100, height: 100)
+                    AsyncImage(url: imageURL) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 100, height: 100)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 100)
+                        case .failure:
+                            Image(systemName: "xmark.circle")
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .onTapGesture {
+                        onTapGesture(item)
                     }
                 }
             }
@@ -148,12 +154,7 @@ private struct TextView: View {
     ItemView(item: Item(type: .page,
                         title: "Main Page",
                         image: nil,
-                        items: [
-                            .init(type: .section,
-                                  title: "Introduction",
-                                  image: nil,
-                                  items: [])
-                        ]),
+                        items: nil),
              onTapGesture: { _ in } ,
              depth: 0)
 }

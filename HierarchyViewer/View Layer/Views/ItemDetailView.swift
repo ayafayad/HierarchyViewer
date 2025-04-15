@@ -15,7 +15,7 @@ struct ItemDetailView: View {
     
     var body: some View {
         GeometryReader { gr in
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 HStack {
                     Spacer()
                     Button(action: {
@@ -27,17 +27,17 @@ struct ItemDetailView: View {
                     }
                     .padding()
                 }
+                if let title = item.title {
+                    Text(title)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                }
                 if let imageURL = item.largeImageURL {
                     AnimatedImageView(url: imageURL)
                         .aspectRatio(1, contentMode: .fit)
                         .background(RoundedRectangle(cornerRadius: 10)
                             .fill(Color(Constants.ImageProperties.imgBgColor)
                                 .opacity(0.8)))
-                }
-                if let title = item.title {
-                    Text(title)
-                        .font(.title3)
-                        .fontWeight(.bold)
                 }
                 Spacer()
             }
@@ -58,7 +58,6 @@ struct AnimatedImageView: View {
             switch phase {
             case .empty:
                 ProgressView()
-                    .aspectRatio(1, contentMode: .fit)
             case .success(let image):
                 image
                     .resizable()
