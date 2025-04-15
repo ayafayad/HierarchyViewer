@@ -17,6 +17,7 @@ final class APIManagerTests: XCTestCase {
     
     var sut: APIManager!
     var urlSession: URLSession!
+    let networkMonitor = MockNetworkMonitor(isReachable: true)
 
     override func setUpWithError() throws {
         super.setUp()
@@ -27,7 +28,8 @@ final class APIManagerTests: XCTestCase {
         urlSession = URLSession(configuration: configuration)
                 
         // Instantiate our APIManager with the stubbed URLSession
-        sut = APIManager(urlSession: urlSession)
+        sut = APIManager(urlSession: urlSession,
+                         networkMonitor: networkMonitor)
     }
 
     override func tearDownWithError() throws {
@@ -125,6 +127,36 @@ final class APIManagerTests: XCTestCase {
             XCTAssertTrue(true)
         } else {
             XCTFail("Expected NetworkError.decodingFailed")
+        }
+    }
+    
+    func testNoInternetConnectionError() async throws {
+        // Given
+        let url = "https://example.com"
+        let dummyData = PersonName(firstName: "Aya", lastName: "Fayad")
+        let jsonData = try JSONEncoder().encode(dummyData)
+        networkMonitor.isNetworkReachable = false
+        var returnedError: Error?
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: URL(string: "https://example.com")!,
+                                           statusCode: 200,
+                                           httpVersion: nil,
+                                           headerFields: ["Content-Type": "application/json"])!
+            return (response, jsonData)
+        }
+        
+        // When
+        let response = await sut.request(url, type: PersonName.self)
+        if case .failure(let error) = response {
+            returnedError = error
+        }
+        
+        // Then
+        let networkError = try XCTUnwrap(returnedError as? NetworkError)
+        if case .noInternetConnection = networkError {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("Expected NetworkError.noInternetConnection")
         }
     }
     
