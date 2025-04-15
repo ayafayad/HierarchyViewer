@@ -9,10 +9,12 @@ import SwiftUI
 
 @main
 struct HierarchyViewerApp: App {
+    
+    @StateObject private var coordinator = AppCoordinator()
 
     var body: some Scene {
         WindowGroup {
-            ItemListView(viewModel: ItemListViewModel(itemRepository: ItemRepository()))
+            coordinator.rootView
         }
     }
 }
